@@ -1,47 +1,43 @@
-import React, {Component} from "react";
+import React, {useState, useContext}from "react";
 import PropTypes from "prop-types";
+import GithubContext from '../../context/github/githubContext'
 
-export class Search extends Component {
-  state = {
-    text: "",
-  };
-
-  static propTypes = {
-    searchUsers: PropTypes.func.isRequired,
-    clearUsers: PropTypes.func.isRequired,
-    showClear: PropTypes.bool.isRequired,
-    setAlert: PropTypes.func.isRequired,
-  };
+const Search = ({showClear, clearUsers, setAlert}) => {
+  const githubContext = useContext(githubContext)
+  // This is where is where state would be if it were a conditional component
+ const [text, setText] = useState('')
   // If you don't use the this keyword then you then onSubmit will return undefined as the scope of this does not pertain to the Component but to the function itself (i think)
-  onSubmit = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    if (this.state.text === "") {
-      this.props.setAlert("Please enter something", "light");
+    if (text === "") {
+      setAlert("Please enter something", "light");
     } else {
-      this.props.searchUsers(this.state.text);
-      this.setState({text: ""});
+      githubContext.searchUsers(text);
+      setText('');
     }
     // This is what you send up to the app.js to keep things centralized
   };
 
-  onChange = (e) => {
+  const onChange = (e) => {
     // Using brackets allows you to access the key, in this case name, as oppsed to changing the value "text"
-    this.setState({[e.target.name]: e.target.value});
+    // no more 'this.' Call the function setText and pass the value you want as the argument.
+    setText(e.target.value);
   };
 
-  render() {
+
     // Destructure showclear and clearusers so you don't have to keep on typing props.whatever
-    const {showClear, clearUsers} = this.props;
+
     return (
       <div>
         {/* When we have a form we usually want to attach a state to the  input */}
-        <form onSubmit={this.onSubmit} className='form'>
+        <form onSubmit={onSubmit} className='form'>
           <input
             type='text'
             name='text'
             placeholder='Search Users...'
-            value={this.text}
-            onChange={this.onChange}
+            // We don't need this.state.text anymore, just pass 'text'
+            value={text}
+            onChange={onChange}
           />
           <input
             type='submit'
@@ -56,7 +52,12 @@ export class Search extends Component {
         )}
       </div>
     );
-  }
 }
+
+Search.propTypes = {
+  clearUsers: PropTypes.func.isRequired,
+  showClear: PropTypes.bool.isRequired,
+  setAlert: PropTypes.func.isRequired,
+};
 
 export default Search;
