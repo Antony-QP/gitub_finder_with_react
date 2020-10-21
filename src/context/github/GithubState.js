@@ -11,6 +11,17 @@ import {
   GET_REPOS
 } from '../types'
 
+let githubClientId 
+let githubClientSecret
+
+if(process.env.NODE_ENV !== 'production'){
+  githubClientId = process.env.REACT_APP_GITHUB_CLIENT_ID
+  githubClientSecret = process.env.REACT_APP_GITHUB_CLIENT_SECRET
+}else{
+  githubClientId =  process.env.GITHUB_CLIENT_ID
+  githubClientSecret = process.env.GITHUB_CLIENT_SECRET
+}
+
 const GithubState = props => {
   const initialState = {
     users:[],
@@ -26,7 +37,7 @@ const GithubState = props => {
   const searchUsers = async (text) => {
     setLoading();
     const res = await axios.get(
-      `https://api.github.com/search/users?q=${text}&client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+      `https://api.github.com/search/users?q=${text}&client_id=${githubClientId}&client_secret=${githubClientSecret}`
     );
 
     console.log(res.data);
@@ -38,11 +49,41 @@ const GithubState = props => {
     })
   };
 
-  // Get USer
+  // Get User
+  // Get a single Github user
+  const getUser = async (username) => {
+    setLoading();
+    const res = await axios.get(
+      `https://api.github.com/users/${username}?&client_id=${githubClientId}&client_secret=${githubClientSecret}`
+    );
+
+    dispatch({
+      type: GET_USER, 
+      payload: res.data
+    })
+  };
 
   // Get Repos
+  // Get users repos
+  const getUserRepos = async (username) => {
+    setLoading();
+    const res = await axios.get(
+      `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=${githubClientId}&client_secret=${githubClientSecret}`
+    );
+
+    dispatch({
+      type: GET_REPOS,
+      payload: res.data
+    })
+    setLoading(false);
+  };
+ 
 
   // Clear Users
+ // clearUsers from state
+ const clearUsers = () => dispatch({type: CLEAR_USERS})
+  // setUsers([])
+  // setLoading(false);
 
   // Set Loading
   const setLoading = () => {
@@ -55,7 +96,10 @@ const GithubState = props => {
     user: state.user,
     repos: state.repos,
     loading: state.loading,
-    searchUsers
+    searchUsers,
+    clearUsers,
+    getUser,
+    getUserRepos
   }}
   >
 {props.children}
